@@ -65,9 +65,9 @@ class Farm():
     #         data_to_insert = (user_id, title, description, location, start_date, duration_days)
     #         self.cur.execute(insert_query, data_to_insert) 
     #         self.conn.commit() 
-    def list_opportunities(self):
+    def list_opportunities(self, city):
         self.cur = self.conn.cursor()
-        self.cur.execute(f"SELECT * FROM users")
+        self.cur.execute(f"SELECT location FROM opportunities")
         rows = self.cur.fetchall()
         for row in rows:
             return row
@@ -86,4 +86,3 @@ class Farm():
                 # self.conn.commit()   
         
 trial = Farm()
-trial.list_opportunities()
