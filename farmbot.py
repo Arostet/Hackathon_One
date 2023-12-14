@@ -10,7 +10,7 @@ class FarmBot:
         self.bot_token = os.environ.get('BOT_TOKEN')
         self.bot = telebot.TeleBot(self.bot_token)
         self.user_data = {}
-        self.farm = Farm()
+        self.farm = Farm(user_data=self.user_data)
         self.setup_handlers()
 
     def setup_handlers(self):
@@ -39,7 +39,6 @@ class FarmBot:
         self.update_user_data(chat_id, 'next_step', 'ask_city')
 
     def handle_city_response(self, message):
-        print("Handling city")
         chat_id = message.chat.id
         city = message.text.strip()
         self.update_user_data(chat_id, 'city', city)
@@ -54,13 +53,28 @@ class FarmBot:
         self.update_user_data(chat_id, 'next_step', 'ask_username')
 
     def handle_username_input(self, message):
-        print("Handling username_i")
         chat_id = message.chat.id
         username = message.text.strip()
         self.update_user_data(chat_id, 'username', username)
         self.bot.reply_to(message, "What's your phone number:")
         self.update_user_data(chat_id, 'next_step', 'ask_phone')
-    
+
+    def handle_phone_input(self, message):
+        chat_id = message.chat.id
+        phone_number = message.text.strip()
+        self.update_user_data(chat_id, 'phone_number', phone_number)
+
+        # Assuming you have already stored username, phone number, and other data in user_data
+        try:
+            # Here you call add_user with only chat_id as it retrieves other data from user_data internally
+            self.farm.add_user(chat_id)  
+            self.bot.reply_to(message, "Thank you! We have recorded your details.")
+        except Exception as e:
+            self.bot.reply_to(message, "Sorry, there was an error saving your details.")
+            print(f"Database error: {e}")
+
+        self.update_user_data(chat_id, 'next_step', None)
+
     def ask_farm(self, message):
         chat_id = message.chat.id
         self.bot.reply_to(message, "Great! You're a farm looking for volunteers. What would you title this volunteer opportunity? ")
@@ -88,16 +102,6 @@ class FarmBot:
         self.bot.reply_to(message, "Success! We have recorded the opportunity details and will try and match you with volunteers ASAP.")
         self.update_user_data(chat_id, 'next_step', None)
  
-
-    def handle_phone_input(self, message):
-            chat_id = message.chat.id
-            phone_number = message.text.strip()
-            self.update_user_data(chat_id, 'phone_number', phone_number)
-        
-            self.farm.add_user(chat_id)
-            
-            self.bot.reply_to(message, "Thank you! We have recorded your details.")
-            self.update_user_data(chat_id, 'next_step', None) 
 
     def default_message(self, message):
         self.bot.reply_to(message, "You're on your way to goodness! Please type 'farm' or 'volunteer' to proceed.")
