@@ -16,7 +16,7 @@ class Farm():
         )
         self.cur = self.conn.cursor()
         self.user_data = user_data
-        
+
         # Function to view all users
     def view_all_users(self, conn):
         self.cur = self.conn.cursor()
@@ -32,6 +32,7 @@ class Farm():
         username = user_info.get('username', 'Unknown')
         phone_number = user_info.get('phone_number', '0000000000')
         user_type = user_info.get('role', 'unknown')  # 'farm' or 'volunteer'
+        
         insert_query = 'INSERT INTO users (username, phone_number, user_type) VALUES (%s, %s, %s)'
         data_to_insert = (username, phone_number, user_type)
         self.cur.execute(insert_query, data_to_insert)
@@ -43,10 +44,8 @@ class Farm():
         description = opportunity_info.get('description', 'No Description')
         location = opportunity_info.get('location', 'Unknown Location')
 
-        insert_query = 'INSERT INTO opportunities (title, location) VALUES (%s, %s)'
-        # Assuming user_id is also stored in user_data or retrieved differently
-        user_id = opportunity_info.get('user_id', 0)
-        data_to_insert = (user_id, title, description, location)
+        insert_query = 'INSERT INTO opportunities (title, description, location) VALUES (%s, %s, %s)'
+        data_to_insert = (title, description, location)
         self.cur.execute(insert_query, data_to_insert)
         self.conn.commit()
     # def add_user(self):

@@ -99,9 +99,16 @@ class FarmBot:
         chat_id = message.chat.id
         location = message.text.strip()
         self.update_user_data(chat_id, 'location', location)
-        self.bot.reply_to(message, "Success! We have recorded the opportunity details and will try and match you with volunteers ASAP.")
+        try:
+            # Here you call add_user with only chat_id as it retrieves other data from user_data internally
+            self.farm.add_opportunity(chat_id)  
+            self.bot.reply_to(message, "Thank you! We have recorded your details.")
+        except Exception as e:
+            self.bot.reply_to(message, "Sorry, there was an error saving your details.")
+            print(f"Database error: {e}")
+
         self.update_user_data(chat_id, 'next_step', None)
- 
+
 
     def default_message(self, message):
         self.bot.reply_to(message, "You're on your way to goodness! Please type 'farm' or 'volunteer' to proceed.")
