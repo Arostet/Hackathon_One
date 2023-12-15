@@ -22,7 +22,7 @@ class MenuItem():
                 print("Exiting.")
                 break
             elif self.user_input == '1':
-                self.cur.execute("SELECT * FROM users")
+                self.cur.execute("SELECT * FROM user")
                 rows = self.cur.fetchall()
                 for row in rows:
                     print(row)

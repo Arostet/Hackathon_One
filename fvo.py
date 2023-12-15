@@ -25,6 +25,14 @@ class Farm():
         for row in rows:
             print(row)
         self.cur.close()
+    
+    def view_all_opps(self, conn):
+            self.cur = self.conn.cursor()
+            self.cur.execute("SELECT * FROM opportunities")
+            rows = self.cur.fetchall()
+            for row in rows:
+                print(row)
+            self.cur.close()
 
     # Function to add a new user
     def add_user(self, chat_id):
@@ -48,32 +56,19 @@ class Farm():
         data_to_insert = (title, description, location)
         self.cur.execute(insert_query, data_to_insert)
         self.conn.commit()
-    # def add_user(self):
-    #     username = 
-    #     phone_number = 
-    #     insert_query = 'INSERT INTO menu_items (item_name, item_price) VALUES (%s, %s)'
-    #     data_to_insert = (item_name, item_price)
-    #     self.cur.execute(insert_query, data_to_insert) 
-    #     self.conn.commit()   
-    
-    def list_opportunities(self, city):
+
+    def list_opportunities(self):
         self.cur = self.conn.cursor()
-        self.cur.execute(f"SELECT location FROM opportunities")
+        self.cur.execute("SELECT DISTINCT location FROM opportunities ORDER BY location")
         rows = self.cur.fetchall()
-        for row in rows:
-            return row
-        
+        locations = [row[0] for row in rows]  
+        ret_list = '\n'.join(locations)
+        return ret_list
 
     def close_c_c(self):
         self.cur.close()
         self.conn.close()
 
 
-                # item_name = 
-                # item_price = 
-                # insert_query = 'INSERT INTO menu_items (item_name, item_price) VALUES (%s, %s)'
-                # data_to_insert = (item_name, item_price)
-                # self.cur.execute(insert_query, data_to_insert) 
-                # self.conn.commit()   
-        
 trial = Farm()
+print(trial.list_opportunities())

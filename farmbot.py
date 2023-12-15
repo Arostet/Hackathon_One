@@ -44,10 +44,10 @@ class FarmBot:
         self.update_user_data(chat_id, 'city', city)
         
         # Call list_opportunities from the Farm instance
-        opportunities = self.farm.list_opportunities(city)
+        opportunities = self.farm.list_opportunities()
     
         # Ensure that opportunities is a string
-        opportunities_message = f"Here is a list of locations that we have volunteer opportunities for you: \n {str(opportunities)} \n If that works for you, what would you like your username to be?"
+        opportunities_message = f"Here is a list of locations that we have volunteer opportunities for you: \n \n{str(opportunities)} \n \nIf that works for you, what would you like your username to be?"
         
         self.bot.reply_to(message, opportunities_message)
         self.update_user_data(chat_id, 'next_step', 'ask_username')
@@ -117,10 +117,6 @@ class FarmBot:
         if chat_id not in self.user_data:
             self.user_data[chat_id] = {}
         self.user_data[chat_id][key] = value
-
-    # def list_opportunities(self, city):
-    #     # Your existing list_opportunities logic here
-    #     # ...
 
     def start_polling(self):
         try:
