@@ -14,18 +14,16 @@ class FarmBot:
         self.setup_handlers()
 
     def setup_handlers(self):
-        # Define message handlers
-        self.bot.message_handler(commands=['start', 'help'])(self.send_welcome)
+        self.bot.message_handler(commands=['start', 'hello'])(self.send_welcome)
         self.bot.message_handler(func=lambda message: message.content_type == 'text' and message.text.lower() == 'volunteer')(self.ask_volunteer)
         self.bot.message_handler(func=lambda message: self.user_data.get(message.chat.id, {}).get('next_step') == 'ask_city')(self.handle_city_response)
         self.bot.message_handler(func=lambda message: message.content_type == 'text' and message.text.lower() == 'farm')(self.ask_farm)
         self.bot.message_handler(func=lambda message: self.user_data.get(message.chat.id, {}).get('next_step') == 'ask_title')(self.handle_title_input)
         self.bot.message_handler(func=lambda message: self.user_data.get(message.chat.id, {}).get('next_step') == 'ask_description')(self.handle_description_input)
         self.bot.message_handler(func=lambda message: self.user_data.get(message.chat.id, {}).get('next_step') == 'ask_location')(self.handle_location_input)
-        # self.bot.message_handler(func=lambda message: self.user_data.get(message.chat.id, {}).get('next_step') == 'ask_start_date')(self.handle_start_date_input)
-        # self.bot.message_handler(func=lambda message: self.user_data.get(message.chat.id, {}).get('next_step') == 'ask_duration_days')(self.handle_duration_days_input)
         self.bot.message_handler(func=lambda message: self.user_data.get(message.chat.id, {}).get('next_step') == 'ask_username')(self.handle_username_input)
         self.bot.message_handler(func=lambda message: self.user_data.get(message.chat.id, {}).get('next_step') == 'ask_phone')(self.handle_phone_input)
+        self.bot.message_handler(func=lambda message: self.user_data.get(message.chat.id, {}).get('next_step') == 'show_volunteers')(self.handle_volunteer_display)
         self.bot.message_handler(func=lambda message: True)(self.default_message)
 
 
@@ -41,8 +39,9 @@ class FarmBot:
     def handle_city_response(self, message):
         chat_id = message.chat.id
         city = message.text.strip()
-        self.update_user_data(chat_id, 'city', city)
+        self.update_user_data(chat_id, 'location', city)
         
+
         # Call list_opportunities from the Farm instance
         opportunities = self.farm.list_opportunities()
     
@@ -64,16 +63,15 @@ class FarmBot:
         phone_number = message.text.strip()
         self.update_user_data(chat_id, 'phone_number', phone_number)
 
-        # Assuming you have already stored username, phone number, and other data in user_data
         try:
-            # Here you call add_user with only chat_id as it retrieves other data from user_data internally
             self.farm.add_user(chat_id)  
             self.bot.reply_to(message, "Thank you! We have recorded your details.")
         except Exception as e:
             self.bot.reply_to(message, "Sorry, there was an error saving your details.")
             print(f"Database error: {e}")
-
+        
         self.update_user_data(chat_id, 'next_step', None)
+
 
     def ask_farm(self, message):
         chat_id = message.chat.id
@@ -102,13 +100,25 @@ class FarmBot:
         try:
             # Here you call add_user with only chat_id as it retrieves other data from user_data internally
             self.farm.add_opportunity(chat_id)  
-            self.bot.reply_to(message, "Thank you! We have recorded your details.")
+            self.bot.reply_to(message, "Thank you! We have recorded your details. Type in 'show' if you want to see a list of volunteers that you can contact today!")
         except Exception as e:
             self.bot.reply_to(message, "Sorry, there was an error saving your details.")
             print(f"Database error: {e}")
 
-        self.update_user_data(chat_id, 'next_step', None)
+        self.update_user_data(chat_id, 'next_step', 'show_volunteers')
 
+    def handle_volunteer_display(self, message):
+        chat_id = message.chat.id
+        print("handling voll")
+
+        try:
+                volunteer_info = self.farm.view_users()  
+                self.bot.reply_to(message, f"Here are some volunteers. If they are close enough to you, Enter their username to get their phone number: \n{volunteer_info} ")
+        except Exception as e:
+                self.bot.reply_to(message, "Sorry, there was an error saving your details.")
+                print(f"Database error: {e}")
+
+        self.update_user_data(chat_id, 'next_step', None)
 
     def default_message(self, message):
         self.bot.reply_to(message, "You're on your way to goodness! Please type 'farm' or 'volunteer' to proceed.")

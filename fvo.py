@@ -18,14 +18,14 @@ class Farm():
         self.user_data = user_data
 
         # Function to view all users
-    def view_all_users(self, conn):
+    def view_users(self):
         self.cur = self.conn.cursor()
-        self.cur.execute("SELECT * FROM users")
+        self.cur.execute("SELECT username, location FROM users ORDER BY location")
         rows = self.cur.fetchall()
-        for row in rows:
-            print(row)
-        self.cur.close()
-    
+        formatted_rows = [f"{row[0]} - {row[1]}" for row in rows]
+        ret_list = '\n'.join(formatted_rows)
+        return ret_list
+        
     def view_all_opps(self, conn):
             self.cur = self.conn.cursor()
             self.cur.execute("SELECT * FROM opportunities")
@@ -39,10 +39,11 @@ class Farm():
         user_info = self.user_data.get(chat_id, {})
         username = user_info.get('username', 'Unknown')
         phone_number = user_info.get('phone_number', '0000000000')
-        user_type = user_info.get('role', 'unknown')  # 'farm' or 'volunteer'
-        
-        insert_query = 'INSERT INTO users (username, phone_number, user_type) VALUES (%s, %s, %s)'
-        data_to_insert = (username, phone_number, user_type)
+        user_type = user_info.get('role', 'unknown')  
+        location = user_info.get('location', 'unknown')
+
+        insert_query = 'INSERT INTO users (username, phone_number, user_type, location) VALUES (%s, %s, %s, %s)'
+        data_to_insert = (username, phone_number, user_type, location)
         self.cur.execute(insert_query, data_to_insert)
         self.conn.commit()
 
@@ -71,4 +72,3 @@ class Farm():
 
 
 trial = Farm()
-print(trial.list_opportunities())
