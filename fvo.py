@@ -41,9 +41,10 @@ class Farm():
         phone_number = user_info.get('phone_number', '0000000000')
         user_type = user_info.get('role', 'unknown')  
         location = user_info.get('location', 'unknown')
+        volday = user_info.get('volday', '0000-00-00')
 
-        insert_query = 'INSERT INTO users (username, phone_number, user_type, location) VALUES (%s, %s, %s, %s)'
-        data_to_insert = (username, phone_number, user_type, location)
+        insert_query = 'INSERT INTO users (username, phone_number, user_type, location, volday) VALUES (%s, %s, %s, %s, %s)'
+        data_to_insert = (username, phone_number, user_type, location, volday)
         self.cur.execute(insert_query, data_to_insert)
         self.conn.commit()
 
@@ -52,9 +53,10 @@ class Farm():
         title = opportunity_info.get('title', 'No Title')
         description = opportunity_info.get('description', 'No Description')
         location = opportunity_info.get('location', 'Unknown Location')
+        oppday = opportunity_info.get('oppday', '0000-00-00')
 
-        insert_query = 'INSERT INTO opportunities (title, description, location) VALUES (%s, %s, %s)'
-        data_to_insert = (title, description, location)
+        insert_query = 'INSERT INTO opportunities (title, description, location, oppday) VALUES (%s, %s, %s, %s)'
+        data_to_insert = (title, description, location, oppday)
         self.cur.execute(insert_query, data_to_insert)
         self.conn.commit()
 
@@ -65,6 +67,17 @@ class Farm():
         locations = [row[0] for row in rows]  
         ret_list = '\n'.join(locations)
         return ret_list
+    
+    def list_opps(self, chat_id):
+        user_info = self.user_data.get(chat_id, {})
+        self.cur = self.conn.cursor()
+        volday = user_info.get('volday', '0000-00-00')
+        self.cur.execute(f"SELECT title, description, location FROM opportunities WHERE oppday = '{volday}' ORDER BY location;")
+        rows = self.cur.fetchall()
+        opps = [row[0] for row in rows]
+        ret_list = '\n'.join(opps)
+        return ret_list
+    
 
     def close_c_c(self):
         self.cur.close()

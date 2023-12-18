@@ -21,8 +21,10 @@ class FarmBot:
         self.bot.message_handler(func=lambda message: self.user_data.get(message.chat.id, {}).get('next_step') == 'ask_title')(self.handle_title_input)
         self.bot.message_handler(func=lambda message: self.user_data.get(message.chat.id, {}).get('next_step') == 'ask_description')(self.handle_description_input)
         self.bot.message_handler(func=lambda message: self.user_data.get(message.chat.id, {}).get('next_step') == 'ask_location')(self.handle_location_input)
+        self.bot.message_handler(func=lambda message: self.user_data.get(message.chat.id, {}).get('next_step') == 'ask_oppday')(self.handle_oppday_input)
         self.bot.message_handler(func=lambda message: self.user_data.get(message.chat.id, {}).get('next_step') == 'ask_username')(self.handle_username_input)
         self.bot.message_handler(func=lambda message: self.user_data.get(message.chat.id, {}).get('next_step') == 'ask_phone')(self.handle_phone_input)
+        self.bot.message_handler(func=lambda message: self.user_data.get(message.chat.id, {}).get('next_step') == 'ask_volday')(self.handle_volday_input)
         self.bot.message_handler(func=lambda message: self.user_data.get(message.chat.id, {}).get('next_step') == 'show_volunteers')(self.handle_volunteer_display)
         self.bot.message_handler(func=lambda message: True)(self.default_message)
 
@@ -62,10 +64,18 @@ class FarmBot:
         chat_id = message.chat.id
         phone_number = message.text.strip()
         self.update_user_data(chat_id, 'phone_number', phone_number)
+        self.bot.reply_to(message, "Thanks! Okay, last step. On what day do you want to volunteer?")
+        self.update_user_data(chat_id, 'next_step', 'ask_volday')
+
+    def handle_volday_input(self, message):
+        chat_id = message.chat.id
+        volday = message.text.strip()
+        self.update_user_data(chat_id, 'volday', volday)
+        opps = self.farm.list_opps(chat_id)
 
         try:
             self.farm.add_user(chat_id)  
-            self.bot.reply_to(message, "Thank you! We have recorded your details.")
+            self.bot.reply_to(message, f"Thank you! We have recorded your details. Here are some opportunities for you on the date you chose: \n {str(opps)}")
         except Exception as e:
             self.bot.reply_to(message, "Sorry, there was an error saving your details.")
             print(f"Database error: {e}")
@@ -97,19 +107,24 @@ class FarmBot:
         chat_id = message.chat.id
         location = message.text.strip()
         self.update_user_data(chat_id, 'location', location)
-        try:
-            # Here you call add_user with only chat_id as it retrieves other data from user_data internally
-            self.farm.add_opportunity(chat_id)  
-            self.bot.reply_to(message, "Thank you! We have recorded your details. Type in 'show' if you want to see a list of volunteers that you can contact today!")
-        except Exception as e:
-            self.bot.reply_to(message, "Sorry, there was an error saving your details.")
-            print(f"Database error: {e}")
+        self.bot.reply_to(message, "Nice! You're almost there. Just let us know what date you want volunteers for. (YYYY-MM-DD)")
+        self.update_user_data(chat_id, 'next_step', 'ask_oppday')
+    
+    def handle_oppday_input(self, message):
+            chat_id = message.chat.id
+            oppday = message.text.strip()
+            self.update_user_data(chat_id, 'oppday', oppday)
+            try:
+                self.farm.add_opportunity(chat_id)  
+                self.bot.reply_to(message, "Thank you! We have recorded your details. Type in 'show' if you want to see a list of volunteers that you can contact today!")
+            except Exception as e:
+                self.bot.reply_to(message, "Sorry, there was an error saving your details.")
+                print(f"Database error: {e}")
 
-        self.update_user_data(chat_id, 'next_step', 'show_volunteers')
-
+            self.update_user_data(chat_id, 'next_step', 'show_volunteers')
     def handle_volunteer_display(self, message):
         chat_id = message.chat.id
-        print("handling voll")
+        # print("handling voll")
 
         try:
                 volunteer_info = self.farm.view_users()  
