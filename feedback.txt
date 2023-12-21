@@ -1,0 +1,12 @@
+Aron: telegram bot for farms and volunteers
+The project is well structured although there are some parts commented not relevant to the functionality.
+OOP was implemented, also database. The main module is telebot but also other modules were properly used.
+The Database is well structured and the relationship between the tables was precise.
+All the cocepts were implemented by the student. 
+I just wish this project had also JSON and API implemented.
+
+Python OOP:9/10
+Modules: 8/10
+Database:9/10
+JSON/API:0/10
+Overall: 7
